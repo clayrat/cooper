@@ -1,0 +1,4 @@
+module Division
+
+%default total
+
