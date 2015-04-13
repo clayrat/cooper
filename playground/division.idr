@@ -118,14 +118,13 @@ zeroLeastDivisor {a} lt (DivAdd {b} _) = void $ plusNonDecreasing b a lt
 ||| Decision procedure for divisibility.
 ||| @ left the smaller number.
 ||| @ right the larger number.
--- TODO: pass the totality checker (currently fails due to cases block)
+-- TODO: pass the totality checker (currently fails due to non-primitive recursion)
 isDiv : (left,right:Nat) -> Dec (left `Div` right)
 isDiv _ Z = Yes DivZero
 isDiv left (S right) = case isLTE (S (S right)) left of
   (Yes lt) => No $ \div => ZnotS . sym $ zeroLeastDivisor lt div
-  (No notlt) => let gte = notLTthenGTE notlt in
-    let (x ** eq) = lteSum gte in
-    assert_total $ case isDiv left x of
+  (No notlt) => let (x ** eq) = lteSum $ notLTthenGTE notlt in
+    case assert_total $ isDiv left x of
       (Yes div) => Yes $ rewrite eq in DivAdd $ div
       (No nodiv) => No $ \prf => 
         nodiv $ divSubtractive (rewrite sym eq in prf) (divRefl left)
