@@ -1,4 +1,4 @@
-module Division
+module Divisibility
 
 %default total
 
@@ -26,6 +26,20 @@ notLTthenGTE {a} {b=Z} contra = LTEZero
 notLTthenGTE {a=Z} {b=S k} contra = void $ contra $ LTESucc LTEZero
 notLTthenGTE {a=S n} {b=S k} contra = LTESucc $ notLTthenGTE $ contra . LTESucc
 
+||| Less than or equal to is an antisymmetric relation.
+lteAntisym : a `LTE` b -> b `LTE` a -> a = b
+lteAntisym LTEZero LTEZero = Refl
+lteAntisym (LTESucc left) (LTESucc right) = cong $ lteAntisym left right
+  
+||| Less than or equal to is a transitive relation.  
+lteTrans : a `LTE` b -> b `LTE` c -> a `LTE` c
+lteTrans LTEZero _ = LTEZero
+lteTrans (LTESucc left) (LTESucc right) = LTESucc $ lteTrans left right
+
+||| If one number is less than another than there is an additive difference.
+lteSum : a `LTE` b -> (x ** b = a + x)
+lteSum {b} LTEZero = (b ** Refl)
+lteSum (LTESucc {left} lte) = case lteSum lte of (x ** eq) => (x ** cong eq)
 
 ---------------------------------------------------------------------
 -- Definition of Divisibility
@@ -45,29 +59,29 @@ factors (DivAdd prf) = case factors prf of
 
 ||| Every factor of a number divides that number.
 divides : b = x * a -> a `Div` b
-divides {x=Z} (eq) = rewrite eq in DivZero
-divides {a} {b} {x=S k} (eq) = rewrite eq in
+divides {x=Z} eq = rewrite eq in DivZero
+divides {a} {b} {x=S k} eq = rewrite eq in
   let prf : (minus b a = mult k a) = 
   trans (cong {f=(flip minus) a} eq) $ plusMinusLeftInverse a (mult k a) in
-  rewrite sym prf in 
+  rewrite sym prf in
   DivAdd $ divides prf
 
 ---------------------------------------------------------------------
 -- Properties of Divisibility
 ---------------------------------------------------------------------
 ||| Every number divides itself.
-divReflexive : (n:Nat) -> n `Div` n
-divReflexive n = divides {x=1} $ sym $ multOneLeftNeutral n
+divRefl : (n:Nat) -> n `Div` n
+divRefl n = divides {x=1} $ sym $ multOneLeftNeutral n
 
 ||| A divisor of two numbers is a divisor of their sum.
-divadds : x `Div` a -> x `Div` b -> x `Div` (a + b)
-divadds DivZero right = right
-divadds {x} {b} (DivAdd {b=b1} left) right = 
+divAdditive : x `Div` a -> x `Div` b -> x `Div` (a + b)
+divAdditive DivZero right = right
+divAdditive {x} {b} (DivAdd {b=b1} left) right = 
   rewrite sym $ plusAssociative x b1 b in
-    DivAdd $ divadds left right
+    DivAdd $ divAdditive left right
 
-divsubs : a `Div` (b + c) -> a `Div` b -> a `Div` c
-divsubs {a} {b} {c} left right =
+divSubtractive : a `Div` (b + c) -> a `Div` b -> a `Div` c
+divSubtractive {a} {b} {c} left right =
 case factors left of 
   (x ** eq) => 
   let ex1:((b + c) - b = x*a - b) = cong {f = (flip minus) b} eq in
@@ -80,9 +94,22 @@ case factors left of
     divides ex5
 
 
-prop : (b `LT` a) -> (a `Div` b) -> (b = 0)
-prop lt  DivZero = Refl
-prop {a} lt (DivAdd {b} _) = void $ plusNonDecreasing b a lt
+divMultiplicative : (c:Nat) -> a `Div` b -> a `Div` c * b
+divMultiplicative Z _ = DivZero
+divMultiplicative (S k) div = divAdditive div $ divMultiplicative k div
+
+divTrans : a `Div` b -> b `Div` c -> a `Div` c
+divTrans _ DivZero = DivZero
+divTrans left (DivAdd right) = divAdditive left $ divTrans left right
+
+divAntisym : a `Div` b -> b `Div` a -> a = b
+divAntisym DivZero DivZero = Refl
+divAntisym {a} (DivAdd {b=Z} _) _ = sym $ plusZeroRightNeutral a
+divAntisym {b} _ (DivAdd {b=Z} _) = plusZeroRightNeutral b
+
+zeroLeastDivisor : (b `LT` a) -> (a `Div` b) -> (b = 0)
+zeroLeastDivisor lt  DivZero = Refl
+zeroLeastDivisor {a} lt (DivAdd {b} _) = void $ plusNonDecreasing b a lt
 
 
 -------------------------------------------------------------------
@@ -92,22 +119,13 @@ prop {a} lt (DivAdd {b} _) = void $ plusNonDecreasing b a lt
 ||| @ left the smaller number.
 ||| @ right the larger number.
 -- TODO: pass the totality checker (currently fails due to cases block)
-partial isDiv : (left:Nat) -> (right:Nat) -> Dec (left `Div` right)
-isDiv left right = case (isLTE (S right) left) of
-  Yes ltprf => case (decEq right Z) of
-    Yes eq => Yes $ rewrite eq in DivZero
-    No neq => No $ \div => neq $ prop ltprf div
-  No gteprf => case (isDiv left (minus right left)) of
-    Yes divprf => Yes $ rewrite sym $ plusMinusRightInverse $ notLTthenGTE gteprf in DivAdd $ divprf
-    No ndivprf => 
-    let beqplusminus = plusMinusRightInverse $ notLTthenGTE gteprf in
-    No $ \x : (left `Div` right) => 
-      let blah : (left `Div` left + (right - left)) = rewrite beqplusminus in x in
-      ndivprf $ divsubs blah $ divReflexive left
-
-
-
-{-
---prop : (expr:DivExpr) -> (n `Sat` expr) -> (x ** (x `Sat` expr, LTE x (exprLcm expr)))
---prop {n=Z} (Divisibility a) (SDivides DivZero) = (Z ** (SDivides DivZero, LTEZero))
--}
+isDiv : (left,right:Nat) -> Dec (left `Div` right)
+isDiv _ Z = Yes DivZero
+isDiv left (S right) = case isLTE (S (S right)) left of
+  (Yes lt) => No $ \div => ZnotS . sym $ zeroLeastDivisor lt div
+  (No notlt) => let gte = notLTthenGTE notlt in
+    let (x ** eq) = lteSum gte in
+    assert_total $ case isDiv left x of
+      (Yes div) => Yes $ rewrite eq in DivAdd $ div
+      (No nodiv) => No $ \prf => 
+        nodiv $ divSubtractive (rewrite sym eq in prf) (divRefl left)
