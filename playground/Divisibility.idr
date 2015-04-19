@@ -115,28 +115,32 @@ zeroLeastDivisor {a} lt (DivAdd {b} _) = void $ plusNonDecreasing b a lt
 -------------------------------------------------------------------
 -- Decidability of Divisibility
 -------------------------------------------------------------------
+-- What we would like
+||| Decision procedure for divisibility.
+||| @ left the smaller number.
+||| @ right the larger number.
+decideDiv : (left,right:Nat) -> Dec (left `Div` right)
 
+
+{- Erin started working on this one
 check_div : (a : Nat) -> (b : Nat) -> Maybe (a `Div` b)
 check_div _ Z = Just DivZero 
 check_div a b = case isLTE (S b) a of 
   Yes prf => Nothing
   No notlt =>
   let (x ** eq) = lteSum (notLTthenGTE notlt) in ?bar
-  
+-}  
 --  check_div a x
 
-{-
-||| Decision procedure for divisibility.
-||| @ left the smaller number.
-||| @ right the larger number.
--- TODO: pass the totality checker (currently fails due to non-primitive recursion)
-isDiv : (left,right:Nat) -> Dec (left `Div` right)
-isDiv _ Z = Yes DivZero
-isDiv left (S right) = case isLTE (S (S right)) left of
+{- Will wrote this one, but it isn't actually total
+decideDiv : (left,right:Nat) -> Dec (left `Div` right)
+decideDiv _ Z = Yes DivZero
+decideDiv left (S right) = case isLTE (S (S right)) left of
   (Yes lt) => No $ \div => ZnotS . sym $ zeroLeastDivisor lt div
   (No notlt) => let (x ** eq) = lteSum $ notLTthenGTE notlt in
-    case assert_total $ isDiv left x of
+    case decideDiv left x of
       (Yes div) => Yes $ rewrite eq in DivAdd $ div
       (No nodiv) => No $ \prf => 
         nodiv $ divSubtractive (rewrite sym eq in prf) (divRefl left)
+
 -}
