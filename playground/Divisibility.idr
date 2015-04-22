@@ -93,7 +93,6 @@ case factors left of
     let ex5:(c = (x-y)*a) = trans ex4 (sym (multDistributesOverMinusLeft x y a)) in
     divides ex5
 
-
 divMultiplicative : (c:Nat) -> a `Div` b -> a `Div` c * b
 divMultiplicative Z _ = DivZero
 divMultiplicative (S k) div = divAdditive div $ divMultiplicative k div
@@ -107,10 +106,13 @@ divAntisym DivZero DivZero = Refl
 divAntisym {a} (DivAdd {b=Z} _) _ = sym $ plusZeroRightNeutral a
 divAntisym {b} _ (DivAdd {b=Z} _) = plusZeroRightNeutral b
 
-zeroLeastDivisor : (b `LT` a) -> (a `Div` b) -> (b = 0)
+zeroLeastDivisor : (b `LT` a) -> (a `Div` b) -> (0 = b)
 zeroLeastDivisor lt  DivZero = Refl
 zeroLeastDivisor {a} lt (DivAdd {b} _) = void $ plusNonDecreasing b a lt
 
+zeroDividesUnique : 0 `Div` n -> 0 = n
+zeroDividesUnique DivZero = Refl
+zeroDividesUnique (DivAdd prf) = zeroDividesUnique prf
 
 -------------------------------------------------------------------
 -- Decidability of Divisibility
@@ -120,7 +122,13 @@ zeroLeastDivisor {a} lt (DivAdd {b} _) = void $ plusNonDecreasing b a lt
 ||| @ left the smaller number.
 ||| @ right the larger number.
 decideDiv : (left,right:Nat) -> Dec (left `Div` right)
-
+{- More attempts, probably actually total, but won't pass the checker
+decideDiv _ Z = Yes $ DivZero
+decideDiv Z (S _) = No $ ZnotS . zeroDividesUnique
+decideDiv (S left) (S right) = case isLTE (S (S right)) (S left) of
+  (Yes lt) => No $ ZnotS . (zeroLeastDivisor lt)
+  (No notlt) => ?decideDivGTEcase
+-} 
 
 {- Erin started working on this one
 check_div : (a : Nat) -> (b : Nat) -> Maybe (a `Div` b)
@@ -132,15 +140,16 @@ check_div a b = case isLTE (S b) a of
 -}  
 --  check_div a x
 
-{- Will wrote this one, but it isn't actually total
-decideDiv : (left,right:Nat) -> Dec (left `Div` right)
+-- Will wrote this one, but it isn't actually total
+
 decideDiv _ Z = Yes DivZero
 decideDiv left (S right) = case isLTE (S (S right)) left of
-  (Yes lt) => No $ \div => ZnotS . sym $ zeroLeastDivisor lt div
+  (Yes lt) => No $ ZnotS . (zeroLeastDivisor lt)
   (No notlt) => let (x ** eq) = lteSum $ notLTthenGTE notlt in
-    case decideDiv left x of
+    case assert_total $ decideDiv left x of
       (Yes div) => Yes $ rewrite eq in DivAdd $ div
       (No nodiv) => No $ \prf => 
         nodiv $ divSubtractive (rewrite sym eq in prf) (divRefl left)
 
--}
+
+
