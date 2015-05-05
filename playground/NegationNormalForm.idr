@@ -59,17 +59,17 @@ denoteTerm env (VCon n) = n
 denoteTerm env (VAdd left right) = (denoteTerm env left) + (denoteTerm env right)
 denoteTerm env (VVar x) = lookup env x
 
+
 -- what does a valid formula denote in an environment
 denote : (env:Env) -> Valid (map fst env) formula -> Type
 denote env (VLt left right) = (denoteTerm env left) `LT` (denoteTerm env right)
 denote env (VAnd left right) = (denote env left, denote env right)
-denote env (VOr left right) = (denote env left, denote env right)
+denote env (VOr left right) = Either (denote env left) (denote env right)
 denote env (VExists x body) = Sigma Nat (\v => denote ((x,v)::env) body)
-denote env (VNExists x body) = Sigma Nat (\v => denote ((x,v)::env) body) -> Void
+denote env (VNExists x body) = (Sigma Nat (\v => denote ((x,v)::env) body)) -> Void
 
 -------------------------------------------------------------------
 -- Decision Procedure
 -------------------------------------------------------------------
 
 decideNNF : (env:Env) -> (expr:Valid (map fst env) _) -> Dec (denote env expr)
-

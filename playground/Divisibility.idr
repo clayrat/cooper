@@ -114,35 +114,18 @@ zeroDividesUnique : 0 `Div` n -> 0 = n
 zeroDividesUnique DivZero = Refl
 zeroDividesUnique (DivAdd prf) = zeroDividesUnique prf
 
+
+
 -------------------------------------------------------------------
 -- Decidability of Divisibility
 -------------------------------------------------------------------
 -- What we would like
 ||| Decision procedure for divisibility.
-||| @ left the smaller number.
-||| @ right the larger number.
+||| @ left the divisor.
+||| @ right the dividend.
 decideDiv : (left,right:Nat) -> Dec (left `Div` right)
-{- More attempts, probably actually total, but won't pass the checker
-decideDiv _ Z = Yes $ DivZero
-decideDiv Z (S _) = No $ ZnotS . zeroDividesUnique
-decideDiv (S left) (S right) = case isLTE (S (S right)) (S left) of
-  (Yes lt) => No $ ZnotS . (zeroLeastDivisor lt)
-  (No notlt) => ?decideDivGTEcase
--} 
-
-{- Erin started working on this one
-check_div : (a : Nat) -> (b : Nat) -> Maybe (a `Div` b)
-check_div _ Z = Just DivZero 
-check_div a b = case isLTE (S b) a of 
-  Yes prf => Nothing
-  No notlt =>
-  let (x ** eq) = lteSum (notLTthenGTE notlt) in ?bar
--}  
---  check_div a x
-
--- Will wrote this one, but it isn't actually total
-
 decideDiv _ Z = Yes DivZero
+decideDiv Z (S k) = No $ ZnotS . zeroDividesUnique
 decideDiv left (S right) = case isLTE (S (S right)) left of
   (Yes lt) => No $ ZnotS . (zeroLeastDivisor lt)
   (No notlt) => let (x ** eq) = lteSum $ notLTthenGTE notlt in
@@ -150,6 +133,3 @@ decideDiv left (S right) = case isLTE (S (S right)) left of
       (Yes div) => Yes $ rewrite eq in DivAdd $ div
       (No nodiv) => No $ \prf => 
         nodiv $ divSubtractive (rewrite sym eq in prf) (divRefl left)
-
-
-

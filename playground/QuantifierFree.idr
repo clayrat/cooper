@@ -24,7 +24,9 @@ parseQF (a `Div` b) = QFDiv a b
 parseQF (a `LT` b) = QFLT a b
 parseQF (left, right) = QFAnd (parseQF left) (parseQF right)
 parseQF (Either left right) = QFOr (parseQF left) (parseQF right)
--- TODO find the type of Void
+-- TODO 'Void' is interpreted here as a variable, it should be 'Builtins.Void'
+-- except that Void is a builtin and so it has no prefix
+-- e.g. 'parseQF (a -> Unit)' evaluates to 'QFNot (parseQF a)'
 parseQF (a -> Void) = QFNot (parseQF a)
 
 denoteQF : QFree -> Type
@@ -71,4 +73,8 @@ decideQF (QFNot prop) = case (decideQF prop) of
 ----------------------------------------------------------------
 syntax solveQF = reflectionTactic parseQF decideQF
 
+test : Either (1 `Div` (2 + 3)) (5 `LT` 4, 0 `Div` 0)
+test = solveQF
 
+test2 : (2 `Div` 3) -> Void
+test2 = solveQF
