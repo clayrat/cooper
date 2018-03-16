@@ -1,5 +1,7 @@
 module Steps.EliminateQuantifier
 
+import Data.ZZ
+
 import Step1.Expr
 
 import Literals.Dedup
@@ -35,7 +37,7 @@ deltaForm _          = 1
 
 -- substition of x -> j in a literal
 substPred : Reduced n -> Expr n -> Dedup n
-substPred (LessThan a) e = LessThan (substExpr e a) a
+substPred (LessThan a) e = ?wat --LessThan (substExpr e a) a
 --substPred (GreaterThan b)  e = LessThan b e
 --substPred (Divides k c)    e = Divides k (substExpr e c)
 --substPred (NotDivides l d) e = ?bla -- PredNotDivides l (substExpr e d)
@@ -57,7 +59,7 @@ firstMajorDisjunct (S k) a = Or (substForm a (Val (Pos (S k)))) (firstMajorDisju
 -- It's okay for B to be a list here because repeating items
 -- in B do not change the meaning of the disjunct.
 getBPred : Reduced (S n) -> List (Expr n)
-getBPred (GreaterThan b) = [b]
+getBPred (GreaterThan b) = ?wat2 --[b]
 getBPred _               = []
 
 getBForm : NotLess (Reduced (S n)) -> List (Expr n)
@@ -69,7 +71,7 @@ getBForm _          = []
 -- iteration over B
 secondMinorDisjunct : List (Expr n) -> Nat -> NotLess (Reduced (S n)) -> NotLess (Dedup n)
 secondMinorDisjunct []        _ _ = False
-secondMinorDisjunct (b :: bs) j e = Or (substForm e (Add b (Val (Pos j)))) (secondMinorDisjunct bs j e)
+secondMinorDisjunct (b :: bs) j e = ?wat3 --Or (substForm e (Add b (Val (Pos j)))) (secondMinorDisjunct bs j e)
 
 -- F[j + b], for 1 <= j <= delta and b in B
 secondMajorDisjunct : Nat -> List (Expr n) -> NotLess (Reduced (S n)) -> NotLess (Dedup n)
@@ -80,5 +82,5 @@ step5 : NotLess (Reduced (S n)) -> NotLess (Dedup n)
 step5 a = Or left right
   where delta : Nat
         delta = deltaForm a
-        left  = firstMajorDisjunct delta (leftInfForm a)
+        left  = ?wat4 --firstMajorDisjunct delta (leftInfForm a)
         right = secondMajorDisjunct delta (getBForm a) a

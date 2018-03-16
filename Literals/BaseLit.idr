@@ -3,6 +3,8 @@ module Literals.BaseLit
 import Data.ZZ
 import Step1.Expr
 
+%access public export
+
 data BaseLit : (n : Nat) -> Type where
   Equals   : Expr n -> Expr n -> BaseLit n
   LessThan : Expr n -> Expr n -> BaseLit n

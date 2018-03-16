@@ -1,5 +1,7 @@
 module Formulas.Initial
 
+%access public export
+
 data Initial : Type -> Type where
   True   : Initial a
   False  : Initial a

@@ -1,7 +1,7 @@
 module Division
+
 %default total
 
-public
 data Division : Nat -> Nat -> Type where
     mkDivision : (q, r : Nat)
     -> a = b * q + r
@@ -51,7 +51,6 @@ divideHelp a b r (mkDivisionStep q prf) = case eitherLTorGTE r (S b) of
     Right prf2 => let (r1 ** step) = divideStep a (S b) r (mkDivisionStep q prf) prf2 in
         divideHelp a b (assert_smaller r r1) step
 
-public
 divide : (a, b : Nat) -> Not (0 = b) -> Division a b
 divide a Z contra     = void (contra Refl)
 divide a (S k) contra = divideHelp a k a (mkDivisionStep 0 (divideBase a k))

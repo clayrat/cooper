@@ -1,10 +1,14 @@
 module Steps.Dedup
 
+import Data.ZZ
+
 import Formulas.NNF
 import Formulas.NotLess
 
 import Literals.BaseLit
 import Literals.Dedup
+
+import Step1.Expr
 
 %default total
 

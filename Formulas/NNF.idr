@@ -1,5 +1,7 @@
 module Formulas.NNF
 
+%access public export
+
 data NNF : Type -> Type where
   True      : NNF a
   False     : NNF a

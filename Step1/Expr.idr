@@ -5,11 +5,11 @@ import Data.Fin
 import Data.Vect
 
 %default total
-
+%access public export
 
 ||| A Term in presburger arithmetic.
 ||| @ n the number of variables in the term.
-%elim data Expr : (n : Nat) -> Type where
+data Expr : (n : Nat) -> Type where
   Val   : ZZ     -> Expr n
   Var   : Fin n  -> Expr n
   Add   : Expr n -> Expr n -> Expr n

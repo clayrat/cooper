@@ -1,5 +1,7 @@
 module Formulas.NotLess
 
+%access public export
+
 data NotLess : Type -> Type where
   True   : NotLess a
   False  : NotLess a

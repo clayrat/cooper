@@ -3,6 +3,8 @@ module Literals.Dedup
 import Data.ZZ
 import Step1.Expr
 
+%access public export
+
 data Dedup : (n : Nat) -> Type where
   LessThan   : Expr n -> Expr n -> Dedup n
   Divides    : ZZ     -> Expr n -> Dedup n

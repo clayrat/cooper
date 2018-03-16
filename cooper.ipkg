@@ -1,0 +1,17 @@
+package cooper
+
+modules = Formulas.Initial
+        , Formulas.NNF
+        , Formulas.NotLess
+        , Internal.Division
+        , Literals.BaseLit
+        , Literals.Dedup
+        , Literals.Multiples
+        , Literals.Reduced
+        , Step1.Expr
+        , Steps.Dedup
+        , Steps.EliminateQuantifier   
+        , Steps.Factorize
+        , Steps.NNF
+
+pkgs = contrib

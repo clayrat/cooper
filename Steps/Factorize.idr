@@ -1,5 +1,10 @@
 module Steps.Factorize
 
+import Data.Fin
+import Data.ZZ
+
+import Step1.Expr
+
 import Formulas.NotLess
 import Literals.Multiples
 import Literals.Reduced
@@ -42,4 +47,4 @@ factorize' n (Or a b)   = Or (factorize' n a) (factorize' n b)
 
 factorize : NotLess (Multiples n) -> NotLess (Reduced n)
 factorize f = let l = lcmForm f in
-  And (Single (Divides (Pos l) (Var fZ))) (factorize' l f)
+  And (Single (Divides (Pos l) (Var FZ))) (factorize' l f)

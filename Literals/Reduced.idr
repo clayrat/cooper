@@ -1,6 +1,9 @@
 module Literals.Reduced
 
 import Step1.Expr
+import Data.ZZ
+
+%access public export
 
 data Reduced : (n : Nat) -> Type where
   LessThan    : Expr (S n) -> Reduced n
